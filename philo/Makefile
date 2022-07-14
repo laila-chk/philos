@@ -1,4 +1,4 @@
-FUNCTS = main.c positive_atoi.c
+FUNCTS = main.c positive_atoi.c ft_strlen.c
 
 CC = cc 
 

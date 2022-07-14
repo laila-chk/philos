@@ -16,5 +16,6 @@ typedef struct s_philos_data
 }	t_philos;
 
 int	positive_atoi(const char *str);
+size_t	ft_strlen(const char *s);
 
 #endif
