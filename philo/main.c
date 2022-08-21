@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/08/17 20:17:57 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/08/20 22:46:44 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,9 @@ int main(int ac, char **av)
 
 	if (ac >= 5 && ac <= 6)
 	{
-		if(!check_args(av, ac, philo))
+		if(!check_args(av, ac, philo) || philo[0] == 0)
 			return (0);
-		while (1);
+		printf("we have %d philos\n", philo[0]);
 	}
 	else
 		write(2, "Error!\nUsage:./philo number_of_philosophers time_to_die time_to_eat time_to_sleep [number_of_times_each_philosopher_must_eat]", 126);
