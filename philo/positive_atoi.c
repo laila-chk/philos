@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 16:16:13 by lchokri           #+#    #+#             */
-/*   Updated: 2022/08/17 20:19:05 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/08/22 16:22:37 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ int	positive_atoi(const char *str)
 		i++;
 	if (str[i] == '-')
 	{
-		write(2, "Error! all values should not be negative\n", 36);
+		write(2, "Error! all values should be positive\n", 38);
 		return (-1);
 	}
 	if (str[i] == '+')
