@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/08/24 04:51:56 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/08/25 00:50:45 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,9 +46,11 @@ void	eat(t_gen *gen)
 	int		i;
 
 	i = 0;
-	while (i < gen->vals[0])
+	while (i <= gen->vals[0] && (i % 2) == 0)
 	{
 		//pthread_mutex_lock();
+	printf("pretending to eat\n");
+		printf ("%d\n", i);
 			i+=2;
 	}
 }
@@ -58,7 +60,6 @@ void	*routine(void *arg)
 	t_gen	*gen;
 
 	gen = ((t_gen*)arg);
-	printf("pretending to eat\n");
 	eat(gen);
 	return ((void *)1);
 }
@@ -80,7 +81,7 @@ int	threads_creation(t_gen *gen)
 	i = 0;
 	while (gen->vals[0]> i)
 	{
-		if (pthread_detach((gen->th[i])))//pthread_detach is better
+		if (pthread_detach((gen->th[i])))
 		{
 			printf("Error while waiting for thread %d to terminate\n", i + 1);
 			return (0);
