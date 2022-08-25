@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/08/25 00:50:45 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/08/25 02:37:13 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,17 +41,18 @@ int	check_args(char **av, int count, t_gen *gen)
 	return (1);
 }
 
+//philos who will eat: N+2 then N+1
+//forks to lock:N+1
 void	eat(t_gen *gen)
 {
 	int		i;
 
 	i = 0;
-	while (i <= gen->vals[0] && (i % 2) == 0)
+	while (i < gen->vals[0])
 	{
-		//pthread_mutex_lock();
-	printf("pretending to eat\n");
-		printf ("%d\n", i);
-			i+=2;
+		pthread_mutex_lock(&(gen->mtx[i]));
+		printf (".. taking fork number %d\n", i);
+			i++;
 	}
 }
 
@@ -60,6 +61,7 @@ void	*routine(void *arg)
 	t_gen	*gen;
 
 	gen = ((t_gen*)arg);
+	printf("thread\n");
 	eat(gen);
 	return ((void *)1);
 }
@@ -69,7 +71,7 @@ int	threads_creation(t_gen *gen)
 	int		i;
 
 	i = 0;
-	while (gen->vals[0]> i)
+	while (gen->vals[0] > i)
 	{
 		if (pthread_create(&(gen->th[i]), NULL, &routine, gen))
 		{
@@ -79,9 +81,9 @@ int	threads_creation(t_gen *gen)
 		i++;
 	}
 	i = 0;
-	while (gen->vals[0]> i)
+	while (gen->vals[0] > i)
 	{
-		if (pthread_detach((gen->th[i])))
+		if (pthread_join((gen->th[i]), NULL))
 		{
 			printf("Error while waiting for thread %d to terminate\n", i + 1);
 			return (0);
@@ -103,9 +105,8 @@ int	main(int ac, char **av)
 		gen.mtx= malloc(gen.vals[0] * sizeof(pthread_mutex_t));
 		if (!threads_creation(&gen))
 			return (1);
-		//watcher thread here!
-		return (0);//kolchi smooth --> ret 1
+		return (0);
 	}
-	print_error(1);//khrejna mn if or madkholnalachii asln ==> kayn chi mochkil
+	print_error(1);
 	return (1); 
 }
