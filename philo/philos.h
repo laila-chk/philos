@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 17:53:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/08/26 13:16:16 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/08/26 13:33:18 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 
 int		positive_atoi(const char *str);
 size_t	ft_strlen(const char *s);
-
+/*
 typedef	struct s_dt
 {
 	int		i;
@@ -59,8 +59,8 @@ typedef	struct	s_data;
 	pthread_t	*th;
 	int			n;
 }	t_dt;
-
-typedef	struct	*ph
+*/
+typedef	struct	ph
 {
 	int				i;
 	int				start;

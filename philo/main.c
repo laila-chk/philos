@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/08/26 13:15:56 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/08/26 14:01:18 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,61 +22,38 @@ void	print_error(int i)
 	}
 }
 
-int	check_args(char **av, int count, t_gen *gen)
+int	check_args(char **av, int count, t_ph *ph)
 {
 	int	i;
+	int	j;
+	int	k;
 
+	j = 0;
 	i = -1;
 	while (i++ < count - 2)
 	{
-		gen->vals[i] = positive_atoi(av[i + 1]);
+		while (j < count - 2)
+		{
+			ph[j++].vals[i] = positive_atoi(av[i + 1]);
+		}
+		j = 0;
 	}
+	k = i;
 	while (i > -1)
 	{
-		if (gen->vals[i--] == -1)
-			return (0);
+		while (j > -1)
+		{
+			if (ph[j--].vals[i] == -1)
+				return (0);
+		}
+		i--;
+		j = k;
 	}
 	if (count == 5)
-		gen->vals[4] = -1;
+		ph->vals[4] = -1;
 	return (1);
 }
-
-//philos who will eat: N+2 then N+1
-//forks to lock:N+1
-/*void	eat(t_gen *gen)
-{
-	int		i;
-
-	i = 0;
-//	while (i < gen->vals[0])
-//	{
-//		pthread_mutex_lock(&(gen->fork[i]));
-//		printf (".. taking fork number %d\n", i);
-//		i++;
-//	/
-	while (i < gen->vals[0] && gen->j % 2 == 0 && gen->vals[0] > 1)
-	{
-		pthread_mutex_lock(&(gen->fork[i]));
-		pthread_mutex_lock(&(gen->fork[i + 1]));
-		printf("%d < %d\n", gen->j, gen->vals[0]);
-		printf (".. taking fork number %d and %d\n", gen->j, gen->j+1);
-		printf("philosopher number %d is eating.......\n", gen->j);
-		usleep(gen->vals[2]);
-		gen->j+=2;
-	}
-	i = 0;
-	while (i < gen->vals[0])
-	{
-		pthread_mutex_unlock(&gen->fork[i++]);
-		printf("putting down fork number %d\n", i - 1);
-	}
-}
-
-void	eat(t_gen gen)
-{
-	pthread_mutex_lock(&(gen->fork[]));
-}
-*/
+/*
 void	*routine(void *arg)
 {
 	t_gen	*gen;
@@ -87,23 +64,20 @@ void	*routine(void *arg)
 //		eat(gen);
 	return ((void *)1);
 }
+*/
 
-void	struct_init(t_gen *gen)
+void	struct_init(t_ph *ph)
 {
 	int	i;
 
 	i = 0;
-	gen->dt = malloc(gen->vals[0] * sizeof(gen->dt));
-	while (i < gen->vals[0])
+	while (i < ph->vals[0])
 	{
-		gen->dt[i].i = i;// that's a fucking dumb ass idea
-		gen->dt[i].t_die = gen->vals[1];
-		gen->dt[i].t_sleep = gen->vals[3];
-		gen->dt[i].meals = gen->vals[4];
+		ph[i].i = i;// that's a fucking dumb ass idea
 		i++;
 	}
 }
-
+/*
 int	threads_creation(t_gen *gen)
 {
 	int		i;
@@ -111,16 +85,15 @@ int	threads_creation(t_gen *gen)
 	i = 0;
 	pthread_mutex_init(gen->fork, NULL);
 	struct_init(gen);
-	while (gen->vals[0] > gen->j)
+	while (i < gen->vals[0])
 	{
-		if (pthread_create(&(gen->th[(gen->j)]), NULL, &routine, gen))
+		if (pthread_create(&(gen->th[i++]), NULL, &routine, gen))
 		{
-			printf("problem occured while creating the %dth thread\n", gen->j);
+			printf("problem occured while creating the %dth thread\n", i);
 			return (0);
 		}
-	printf("___%d\n", gen->j);
-		(gen->j)++;
 	}
+	i = 0;
 	while (gen->vals[0] > i)
 	{
 		if (pthread_join((gen->th[i++]), NULL))
@@ -131,21 +104,22 @@ int	threads_creation(t_gen *gen)
 	}
 	return (1);
 }
-
+*/
 int	main(int ac, char **av)
 {								//makefile wa9ila kay relinki!!
-	t_gen		gen;
+							// o khdem b calloc!
+	t_ph	*ph;
 
-	gen.j = 0;
 	if (ac >= 5 && ac <= 6)
 	{
-		if (!check_args(av, ac, &gen) || gen.vals[0] == 0)
+		ph = malloc(positive_atoi(av[1]) * sizeof(t_ph));
+		if (!check_args(av, ac, ph) || ph->vals[0] == 0)
 			return (1);
-		gen.th = malloc(gen.vals[0] * sizeof(pthread_t));
-		gen.fork= malloc(gen.vals[0] * sizeof(pthread_mutex_t));
-		if (!threads_creation(&gen))
-			return (1);
-		pthread_mutex_destroy(gen.fork);
+//		gen.th = malloc(gen.vals[0] * sizeof(pthread_t));
+//		gen.fork= malloc(gen.vals[0] * sizeof(pthread_mutex_t));
+//		if (!threads_creation(&gen))
+//			return (1);
+//		pthread_mutex_destroy(gen.fork);
 		return (0);
 	}
 	print_error(1);
