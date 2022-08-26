@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 17:53:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/08/26 13:33:18 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/08/26 20:23:36 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,9 @@ typedef	struct	ph
 {
 	int				i;
 	int				start;
-	int				vals[5];
-	pthread_mutex_t	*fork;
-	pthread_t		*th;
+	int				*vals;
+	pthread_mutex_t	fork;
+	pthread_t		th;
 
 }	t_ph;
 

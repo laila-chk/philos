@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/08/26 14:01:18 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/08/26 20:29:48 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,47 +22,37 @@ void	print_error(int i)
 	}
 }
 
-int	check_args(char **av, int count, t_ph *ph)
+int	check_args(char **av, int count,int *vals)
 {
 	int	i;
-	int	j;
-	int	k;
 
-	j = 0;
-	i = -1;
-	while (i++ < count - 2)
+	i = 0;
+	while (i < count - 2)
 	{
-		while (j < count - 2)
-		{
-			ph[j++].vals[i] = positive_atoi(av[i + 1]);
-		}
-		j = 0;
+		vals[i] = positive_atoi(av[i + 1]);
+		i++;
 	}
-	k = i;
-	while (i > -1)
+	i = 0;
+	while (i < count - 2)
 	{
-		while (j > -1)
-		{
-			if (ph[j--].vals[i] == -1)
-				return (0);
-		}
-		i--;
-		j = k;
+		if (vals[i] == -1)
+			return (0);
+		i++;
 	}
 	if (count == 5)
-		ph->vals[4] = -1;
+		vals[4] = -1;
 	return (1);
 }
 /*
-void	*routine(void *arg)
-{
-	t_gen	*gen;
+   void	*routine(void *arg)
+   {
+   t_gen	*gen;
 
-	gen = ((t_gen*)arg);
-	printf("thread  number %d has entered\n", gen->j);
+   gen = ((t_gen*)arg);
+   printf("thread  number %d has entered\n", gen->j);
 //	while (1)
 //		eat(gen);
-	return ((void *)1);
+return ((void *)1);
 }
 */
 
@@ -78,45 +68,48 @@ void	struct_init(t_ph *ph)
 	}
 }
 /*
-int	threads_creation(t_gen *gen)
-{
+   int	threads_creation(t_gen *gen)
+   {
+   int		i;
+
+   i = 0;
+   pthread_mutex_init(gen->fork, NULL);
+   struct_init(gen);
+   while (i < gen->vals[0])
+   {
+   if (pthread_create(&(gen->th[i++]), NULL, &routine, gen))
+   {
+   printf("problem occured while creating the %dth thread\n", i);
+   return (0);
+   }
+   }
+   i = 0;
+   while (gen->vals[0] > i)
+   {
+   if (pthread_join((gen->th[i++]), NULL))
+   {
+   printf("Error while waiting for thread %d to terminate\n", i);
+   return (0);
+   }
+   }
+   return (1);
+   }
+   */
+int	main(int ac, char **av)
+{								//makefile wa9ila kay relinki!!
+	// o khdem b calloc!
+	t_ph	*ph;
+	int		vals[5];
 	int		i;
 
 	i = 0;
-	pthread_mutex_init(gen->fork, NULL);
-	struct_init(gen);
-	while (i < gen->vals[0])
-	{
-		if (pthread_create(&(gen->th[i++]), NULL, &routine, gen))
-		{
-			printf("problem occured while creating the %dth thread\n", i);
-			return (0);
-		}
-	}
-	i = 0;
-	while (gen->vals[0] > i)
-	{
-		if (pthread_join((gen->th[i++]), NULL))
-		{
-			printf("Error while waiting for thread %d to terminate\n", i);
-			return (0);
-		}
-	}
-	return (1);
-}
-*/
-int	main(int ac, char **av)
-{								//makefile wa9ila kay relinki!!
-							// o khdem b calloc!
-	t_ph	*ph;
-
 	if (ac >= 5 && ac <= 6)
 	{
-		ph = malloc(positive_atoi(av[1]) * sizeof(t_ph));
-		if (!check_args(av, ac, ph) || ph->vals[0] == 0)
+		ph = malloc(vals[0] * sizeof(t_ph));
+		if (!check_args(av, ac, vals) || vals[0] == 0)
 			return (1);
-//		gen.th = malloc(gen.vals[0] * sizeof(pthread_t));
-//		gen.fork= malloc(gen.vals[0] * sizeof(pthread_mutex_t));
+		while (i < vals[0])
+			ph[i++].vals = vals;
 //		if (!threads_creation(&gen))
 //			return (1);
 //		pthread_mutex_destroy(gen.fork);

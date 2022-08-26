@@ -2,7 +2,7 @@ FUNCTS = main.c positive_atoi.c ft_strlen.c
 
 CC = cc 
 
-CFLAGS= -Wall -Werror -Wextra -g -pthread 
+CFLAGS= -Wall -Werror -Wextra -g
 
 NAME=philo
 
