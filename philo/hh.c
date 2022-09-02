@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/09/02 20:08:41 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/09/02 20:04:24 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ void	*routine(void *arg)
 	t_ph	*ph;
 
 	ph = (t_ph *)arg;
-/*	while (1)
+	while (1)
 	{
 		if (ph->ok)
 		{
@@ -103,8 +103,7 @@ void	*routine(void *arg)
 		}
 		else 
 			break;
-	}*/
-	printf("ph->i=%d\n", ph->i);
+	}
 	return ((void *)1);
 }
 
