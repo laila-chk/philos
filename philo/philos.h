@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*         :q                                       +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 17:53:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/09/02 17:14:59 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/09/02 17:24:21 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,12 +26,9 @@ typedef	struct	ph
 	int					i;
 	int					start;
 	int					*vals;
+	int					ok;
 	pthread_mutex_t		fork;
 	pthread_t			th;
-	enum
-	{
-		OK,
-	}e_ok;
 }	t_ph;
 
 #endif

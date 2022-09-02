@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/09/02 17:15:40 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/09/02 17:25:12 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,6 +117,7 @@ void	philos_init(t_ph *ph)
 	{
 		ph[i].i = i;
 		i++;
+		ph[i].ok = 1;
 	}
 }
 
@@ -188,6 +189,7 @@ int	main(int ac, char **av)
 			ph[i++].vals = vals;
 		if (!even_threads_creation(ph))
 			return (1);
+		printf("raaandomly %d\n", ph[3].ok);
 //		pthread_mutex_destroy(gen.fork);
 		return (0);
 	}
