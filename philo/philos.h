@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*         :q                                       +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 17:53:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/09/02 17:24:21 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/09/03 18:08:39 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,13 +21,15 @@
 int		positive_atoi(const char *str);
 size_t	ft_strlen(const char *s);
 
-typedef	struct	ph
+typedef	struct	s_ph
 {
 	int					i;
-	int					start;
+	long long			start;
+	long long			last;
 	int					*vals;
-	int					ok;
+	int					meals;
 	pthread_mutex_t		fork;
+	pthread_mutex_t		vals_mtx;
 	pthread_t			th;
 }	t_ph;
 
