@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/09/03 18:22:21 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/09/04 18:44:19 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,24 +48,37 @@ int	check_args(char **av, int count,int *vals)
 
 int	alive(t_ph *ph, int i)
 {
-	if (ph[i].meals == 0)
+	if (ph->meals == 0)
+	{
+		printf("no more meals left for %d\n", i);
 		return (0);
-	else if (ph[i].last - ph[i].start <= ph[i].vals[1])
+	}
+	if (ph->start && (ph->last - ph->start) >= (long long)ph->vals[1])
+	{
+		printf("starving.. :last:%lld    start:%lld  vals:%d\n", ph->last, ph->start, ph->vals[1]);
+		printf("diff: %lld => %d\n", ph->last - ph->start, ph->vals[1]);
 		return (0);
+	}
 	return (1);
 }
 
-int	get_starting_time(t_ph ph, int flg)
+int	get_starting_time(t_ph *ph, int flg)
 {
 	struct	timeval time;
 
 	if (gettimeofday(&time, NULL) == -1)
+	{
+		printf("Error occured while trying to get time of day!");
 		return (0);
+		//we still need to exit here!!
+	}
 	if (flg == 0)
-		ph.start = time.tv_sec * 1000000 + time.tv_usec;
+		ph->start = time.tv_sec * 1000 + time.tv_usec / 1000;
 	else if (flg == 1)
-		ph.last = time.tv_sec * 1000000 + time.tv_usec;
-	printf("last meal was at %lld\n", ph.last);
+	{
+		ph->start = ph->last;
+		ph->last = time.tv_sec * 1000 + time.tv_usec / 1000;
+	}
 	return (1);
 }
 
@@ -73,8 +86,7 @@ void eat(int i, t_ph *ph)
 {
 	if (alive(ph, i))
 	{
-		/* kayn mochkil in the nxt line. probably dik ph ,achi haidak kat passa*/
-		get_starting_time(ph[i], 1);
+		get_starting_time(ph, 1);
 		pthread_mutex_lock(&ph->fork);
 		printf("fork %d was picked up---------- i = %d\n", i, i);
 		if (i <= ph->vals[0] - 2)
@@ -88,7 +100,7 @@ void eat(int i, t_ph *ph)
 			printf("~~~~~~fork 0 was picked up by %d----------\n", i);
 		}
 		printf("______________philosopher %d is eating..________________\n\n", i);
-		usleep(ph->vals[2]);
+		usleep(ph->vals[2] * 1000);
 		if (ph[i].meals > 0)
 			ph[i].meals -= 1;
 		pthread_mutex_unlock(&ph->fork);
@@ -103,7 +115,7 @@ void eat(int i, t_ph *ph)
 			pthread_mutex_unlock(&(ph - (ph->vals[0] - 1))->fork);
 			printf("fork 0 is back to tablee----------\n");
 		}
-		printf("philo %d :\"lah y5lef\"\n", i);
+		printf("philo %d finished eating\n", i);
 	}
 }
 
@@ -125,7 +137,7 @@ void	*routine(void *arg)
 	{
 		eat(ph->i, ph);
 		think(ph);
-		usleep(ph->vals[3]);
+		usleep(ph->vals[3] * 1000);
 	}
 	return ((void *)1);
 }
@@ -153,22 +165,18 @@ int odd_threads_creation(t_ph *ph)
 		if (pthread_create(&ph[i].th, NULL, &routine, &ph[i]))
 		{
 			printf("problem occured while creating the %dth thread\n", i);
-			//			pthread_mutex_destroy(gen.fork);
 			return (0);
 		}
-		if (!get_starting_time(ph[i], 0))
+		if (!get_starting_time(&ph[i], 0))
 			return (0);
-
 		i += 2;
 	}
 	i = 0;
 	while (i < ph->vals[0])
 	{
-		//if (pthread_join(ph[i++].th, NULL) != 0)
 		if (pthread_detach(ph[i++].th))
 		{
 			printf("Error while waiting for thread %d to terminate\n", i);
-			//			pthread_mutex_destroy(gen.fork);
 			return (0);
 		}
 	}
@@ -190,7 +198,7 @@ int	even_threads_creation(t_ph *ph)
 			printf("problem occured while creating the %dth thread\n", i);
 			return (0);
 		}
-		if (!get_starting_time(ph[i], 0))
+		if (!get_starting_time(&ph[i], 0))
 			return (0);
 		i += 2;
 	}
@@ -221,8 +229,12 @@ int	main(int ac, char **av)
 		{
 			while (i < ph->vals[0])
 			{
-				if (!alive(ph, i))
+				if (alive(&ph[i], i) == 0)
 				{
+					//destroy_mutexes();
+					   /*i decided to destroy bfr printing so annoncing the death will be as close to the end as
+						*
+						* much as possible*/
 					printf("philosopher %d has died :'( \n", i);
 					return (0);
 				}
@@ -230,7 +242,7 @@ int	main(int ac, char **av)
 			}
 			i = 0;
 		}
-		//		pthread_mutex_destroy(gen.fork);
+		sleep(20);
 		return (0);
 	}
 	print_error(1);
