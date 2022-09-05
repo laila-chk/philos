@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/09/05 17:31:14 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/09/05 20:16:16 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,22 +68,15 @@ int	print_stamp(t_ph *ph, int flg)
 	struct	timeval	time;
 
 	i = 0;
+	gettimeofday(&time, NULL);
 	if (flg == 0)
 	{
 		while (i < ph->vals[0])
-		{
-			(ph + i)->start = time.tv_sec * 1000 + time.tv_usec / 1000;
-				i++;
-		}
+			(ph + i++)->start = time.tv_sec * 1000 + time.tv_usec / 1000;
 	}
-	printf("???%ld??%d\n", (time.tv_sec * 1000 + time.tv_usec / 1000), flg);
 	if (flg == 1)
-	{
 		ph->end = (time.tv_sec * 1000 + time.tv_usec / 1000);
-		printf("!!!!!%ld!!!!\n", time.tv_sec * 1000 + time.tv_usec / 1000);
-		printf("$$%lld$$\n", ph->end);
-	}
-	return (ph->end);
+	return (ph->end - ph->start);
 }
 
 int	get_starting_time(t_ph *ph, int flg)
@@ -97,6 +90,7 @@ int	get_starting_time(t_ph *ph, int flg)
 		//we still need to exit here!!
 	}
 	if (flg == 0)
+
 		ph->first = tm.tv_sec * 1000 + tm.tv_usec / 1000;
 	else if (flg == 1)
 	{
@@ -112,19 +106,18 @@ void eat(int i, t_ph *ph)
 	{
 		get_starting_time(ph, 1);
 		pthread_mutex_lock(&ph->fork);
-	//	printf("%d   %d has taken a fork", print_stamp(ph, 1), i);
-		print_stamp(ph, 1);
+		printf("%d   %d has taken a fork\n", print_stamp(ph, 1), i);
 		if (i <= ph->vals[0] - 2)
 		{
 			pthread_mutex_lock(&(ph+1)->fork);
-			printf("fork %d was picked up----------i = %d\n", i+1, i);
+			printf("%d   %d has taken a fork\n", print_stamp(ph, 1), i);
 		}
 		else
 		{
 			pthread_mutex_lock(&(ph- (ph->vals[0] - 1))->fork);
-			printf("~~~~~~fork 0 was picked up by %d----------\n", i);
+			printf("%d   %d has taken a fork\n", print_stamp(ph, 1), i);
 		}
-		printf("______________philosopher %d is eating..________________\n\n", i);
+		printf("%d   philosopher %d is eating.._____________\n", print_stamp(ph, 1), i);
 		usleep(ph->vals[2] * 1000);
 		if (ph[i].meals > 0)
 			ph[i].meals -= 1;
@@ -136,13 +129,14 @@ void eat(int i, t_ph *ph)
 	}
 }
 
-void	think(t_ph *ph)
+void	think_and_sleep(t_ph *ph)
 {
 	if (alive(ph, ph->i))
-	{
-		printf("philosopher %d is thinking\n", ph->i);
-		sleep(1);
-	}
+		{
+			printf("%d    %d is thinking\n", print_stamp(ph, 1), ph->i);
+			printf("%d    %d is sleeping\n\n", print_stamp(ph, 1), ph->i);
+			//get enough sleep 
+		}
 }
 
 void	*routine(void *arg)
@@ -153,7 +147,7 @@ void	*routine(void *arg)
 	while (1)
 	{
 		eat(ph->i, ph);
-		think(ph);
+		think_and_sleep(ph);
 		usleep(ph->vals[3] * 1000);
 	}
 	return ((void *)1);
