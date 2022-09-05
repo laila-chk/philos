@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*         :q                                       +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 17:53:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/09/03 18:08:39 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/09/05 17:06:19 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,9 @@ typedef	struct	s_ph
 {
 	int					i;
 	long long			start;
+	long long			end;
 	long long			last;
+	long long			first;
 	int					*vals;
 	int					meals;
 	pthread_mutex_t		fork;
