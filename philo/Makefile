@@ -11,7 +11,7 @@ O_FILES=$(FUNCTS:.c=.o)
 all: $(NAME)
 
 $(NAME):$(O_FILES)
-		$(CC) $(O_FILES) -o philo 
+		$(CC) $(O_FILES) -o philo
 		rm -rf $(O_FILES)
 
 clean:

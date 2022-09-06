@@ -48,11 +48,18 @@ int	check_args(char **av, int count,int *vals)
 
 int	alive(t_ph *ph, int i)
 {
-	if (ph->meals == 0)
+	int		j;
+
+	j = 0;
+	(void)i;
+	while (j < ph->vals[0])
 	{
-		printf("no more meals left for %d\n", i);
-		return (0);
+		if ((ph+j)->meals != 0)
+			break;
+		j++;
 	}
+	if (j == ph->vals[0])
+		return (0);
 	if (ph->first && (ph->last - ph->first) >= (long long)ph->vals[1])
 	{
 		printf("starving.. :last:%lld    start:%lld  vals:%d\n", ph->last, ph->first, ph->vals[1]);
@@ -90,13 +97,13 @@ int	get_starting_time(t_ph *ph, int flg)
 		//we still need to exit here!!
 	}
 	if (flg == 0)
-
 		ph->first = tm.tv_sec * 1000 + tm.tv_usec / 1000;
 	else if (flg == 1)
 	{
 		ph->first = ph->last;
 		ph->last = tm.tv_sec * 1000 + tm.tv_usec / 1000;
 	}
+	printf("flag:%d   first:%lld last:%lld start:%lld\n", flg, ph->first, ph->last, ph->start);
 	return (1);
 }
 
@@ -213,7 +220,7 @@ int	even_threads_creation(t_ph *ph)
 			return (0);
 		i += 2;
 	}
-	usleep(200);
+	usleep(500);
 	if (!odd_threads_creation(ph))
 		return (0);
 	return (1);
@@ -237,24 +244,17 @@ int	main(int ac, char **av)
 		print_stamp(&ph[0], 0);
 		if (!even_threads_creation(ph))
 			return (1);
+		i = 0;
 		while (1)
 		{
-			while (i < ph->vals[0])
-			{
-				if (alive(&ph[i], i) == 0)
+				if (alive(ph, 0) == 0)
 				{
 					//destroy_mutexes();
-   /*i decided to destroy bfr printing so annoncing the death will be as close to the end as
-	*
-	* possible*/
 					printf("philosopher %d has died :'( \n", i);
-					return (0);
+				//	return (0);
+				break;
 				}
-				i++;
-			}
-			i = 0;
 		}
-		sleep(20);
 		return (0);
 	}
 	print_error(1);
