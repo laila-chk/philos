@@ -185,7 +185,7 @@ int odd_threads_creation(t_ph *ph)
 			printf("problem occured while creating the %dth thread\n", i);
 			return (0);
 		}
-		if (!get_starting_time(&ph[i], 1))
+		if (!get_starting_time(&ph[i], 0))
 			return (0);
 		i += 2;
 	}
@@ -216,7 +216,7 @@ int	even_threads_creation(t_ph *ph)
 			printf("problem occured while creating the %dth thread\n", i);
 			return (0);
 		}
-		if (!get_starting_time(&ph[i], 1))
+		if (!get_starting_time(&ph[i], 0))
 			return (0);
 		i += 2;
 	}

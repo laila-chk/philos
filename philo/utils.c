@@ -1,18 +1,20 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/09/05 20:16:16 by lchokri          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "philos.h"
 #include "pthread.h"
 #include <sys/time.h> 
+
+
+
+
+//just to keep things clear from the beg:
+//		start = start of stimulation
+//		first = first meal or before last one
+//		last = last meal
+// end will be used to calc diff between two times to print how many seconds had passed
+
+
+/*-------------------this function will calculate diff between current time and 
+ * time of when the stimulation had started------------------------*/
+
 
 void	print_error(int i)
 {
@@ -46,72 +48,86 @@ int	check_args(char **av, int count,int *vals)
 	return (1);
 }
 
-int	alive(t_ph *ph, int i)
-{
-	int		j;
 
-	j = 0;
-	(void)i;
-	while (j < ph->vals[0])
-	{
-		if ((ph+j)->meals != 0)
-			break;
-		j++;
-	}
-	if (j == ph->vals[0])
-		return (0);
-	if (ph->first && (ph->last - ph->first) >= (long long)ph->vals[1])
-	{
-		printf("starving.. :last:%lld    start:%lld  vals:%d\n", ph->last, ph->first, ph->vals[1]);
-		printf("diff: %lld => %d\n", ph->last - ph->first, ph->vals[1]);
-		return (0);
-	}
-	return (1);
-}
-
-int	print_stamp(t_ph *ph, int flg)
+int	print_stamp(t_ph *ph, int flag)
 {
-	int	i;
-	struct	timeval	time;
+	int		i;
+	struct timeval tm;
+	int		time;
 
 	i = 0;
-	gettimeofday(&time, NULL);
-	if (flg == 0)
+	time = 0;
+	gettimeofday(&tm, NULL);
+	if (flag == 0) 
 	{
+	/*given 0 as a flg, means stimulation had just started and we need to
+	 * get the time of starting for all threads*/
 		while (i < ph->vals[0])
-			(ph + i++)->start = time.tv_sec * 1000 + time.tv_usec / 1000;
+		{
+			(ph+i)->start = tm.tv_sec * 1000 + tm.tv_usec / 1000;
+			i++;
+		}
 	}
-	if (flg == 1)
-		ph->end = (time.tv_sec * 1000 + time.tv_usec / 1000);
-	return (ph->end - ph->start);
+	else if (flag == 1)
+	{
+			/*here we will calculate and return the time we need to print*/
+		time = (tm.tv_sec * 1000 + tm.tv_usec / 1000) - ph->start;
+		/*start won't change and we need to always gt the latest time to measure
+		 * how much time had already passed*/
+	}
+	return (time);
 }
 
-int	get_starting_time(t_ph *ph, int flg)
+int	time_between_meals(t_ph *ph, int flg)
 {
-	struct	timeval tm;
+		//since this is btwn meals, it should be changed only after eating..
+	struct	timeval tv;
+	int		diff;
 
-	if (gettimeofday(&tm, NULL) == -1)
-	{
-		printf("Error occured while trying to get time of day!");
-		return (0);
-		//we still need to exit here!!
-	}
+	gettimeofday(&tv, NULL);
 	if (flg == 0)
-		ph->first = tm.tv_sec * 1000 + tm.tv_usec / 1000;
+			ph->first = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	else if (flg == 1)
 	{
 		ph->first = ph->last;
-		ph->last = tm.tv_sec * 1000 + tm.tv_usec / 1000;
+		ph->last = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	}
-	printf("flag:%d   first:%lld last:%lld start:%lld\n", flg, ph->first, ph->last, ph->start);
+	diff = ph->last - ph->first;
+	return (diff);
+}
+
+int	alive(t_ph *ph, int flag)
+{
+	int	j;
+
+	j = 0;
+	if (flag == 0)
+	{/*we'll check one philo*/
+		if (ph->meals == 0 || (ph->last - ph->first >= ph->vals[1]))
+			return (0);
+	}
+	else if (flag == 1)
+	{/*this one will be runned by main in an infinite loop*/
+		while (j < ph->vals[0])
+		{
+			//bc we sent ph from main we can do ph[i]:
+			if (ph[j].meals == 0 || (ph[j].last - ph[j].first >= ph->vals[1]))
+			{
+				printf("chi mossiba hna:last : %lld   first: %lld\n ", ph[j].last, ph[j].first );
+				return (0);
+			}
+			j++;
+		}
+	}
 	return (1);
 }
 
+
 void eat(int i, t_ph *ph)
 {
-	if (alive(ph, i))
+	if (alive(ph, 0))
 	{
-		get_starting_time(ph, 1);
+		time_between_meals(ph);
 		pthread_mutex_lock(&ph->fork);
 		printf("%d   %d has taken a fork\n", print_stamp(ph, 1), i);
 		if (i <= ph->vals[0] - 2)
@@ -138,11 +154,12 @@ void eat(int i, t_ph *ph)
 
 void	think_and_sleep(t_ph *ph)
 {
-	if (alive(ph, ph->i))
+	if (alive(ph, 0))
 		{
 			printf("%d    %d is thinking\n", print_stamp(ph, 1), ph->i);
 			printf("%d    %d is sleeping\n\n", print_stamp(ph, 1), ph->i);
-			//get enough sleep 
+			usleep(ph->vals[3] * 1000);
+			//get enough sleep
 		}
 }
 
@@ -155,7 +172,6 @@ void	*routine(void *arg)
 	{
 		eat(ph->i, ph);
 		think_and_sleep(ph);
-		usleep(ph->vals[3] * 1000);
 	}
 	return ((void *)1);
 }
@@ -185,8 +201,7 @@ int odd_threads_creation(t_ph *ph)
 			printf("problem occured while creating the %dth thread\n", i);
 			return (0);
 		}
-		if (!get_starting_time(&ph[i], 1))
-			return (0);
+		time_between_meals(&ph[i]);
 		i += 2;
 	}
 	i = 0;
@@ -216,8 +231,7 @@ int	even_threads_creation(t_ph *ph)
 			printf("problem occured while creating the %dth thread\n", i);
 			return (0);
 		}
-		if (!get_starting_time(&ph[i], 1))
-			return (0);
+		time_between_meals(&ph[i]);
 		i += 2;
 	}
 	usleep(500);
@@ -225,6 +239,7 @@ int	even_threads_creation(t_ph *ph)
 		return (0);
 	return (1);
 }
+
 
 int	main(int ac, char **av)
 {								//makefile wa9ila kay relinki!!
@@ -241,13 +256,14 @@ int	main(int ac, char **av)
 		ph = malloc(vals[0] * sizeof(t_ph));
 		while (i < vals[0])
 			ph[i++].vals = vals;
-		print_stamp(&ph[0], 0);
+		print_stamp(ph, 0);
 		if (!even_threads_creation(ph))
 			return (1);
 		i = 0;
 		while (1)
 		{
-				if (alive(ph, 0) == 0)
+			sleep(1);
+				if (alive(ph, 1) == 0)
 				{
 					//destroy_mutexes();
 					printf("philosopher %d has died :'( \n", i);
@@ -258,5 +274,6 @@ int	main(int ac, char **av)
 		return (0);
 	}
 	print_error(1);
-	return (1); 
+	return (1);
 }
+

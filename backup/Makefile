@@ -1,4 +1,4 @@
-FUNCTS = utils.c positive_atoi.c ft_strlen.c
+FUNCTS = main.c positive_atoi.c ft_strlen.c
 
 CC = cc -pthread
 
