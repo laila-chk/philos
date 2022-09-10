@@ -133,14 +133,16 @@ void eat(int i, t_ph *ph)
 void	think_and_sleep(t_ph *ph, int i)
 {
 	struct	timeval tv;
-	long	strt;
+	long long	strt;
 
 	gettimeofday(&tv, NULL);
-	strt = tv.tv_sec * 1000000 + tv.tv_usec; //kolchi b microsec;
+	strt = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	lock_print("is sleeping-----------", ph, i);
+	printf("%d .  vals %lld           rn= %lld\n", i, (long long)(ph->vals[3]) + strt, (long long)(tv.tv_sec * 1000 + tv.tv_usec / 1000));
 	usleep(ph->vals[3] * 900);
-	while (ph->vals[3] * 1000 + strt < tv.tv_sec * 1000000 + tv.tv_usec)
-		usleep(10);
+	printf("~~%lld\n", (long long)(tv.tv_sec * 1000 + tv.tv_usec / 1000) - strt);
+	while ((long long)(ph->vals[3]) + strt <= (long long)(tv.tv_sec * 1000 + tv.tv_usec / 1000))
+		usleep(1);
 	lock_print("is thinking", ph, i);
 }
 
