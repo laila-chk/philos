@@ -2,7 +2,8 @@ FUNCTS = utils.c positive_atoi.c ft_strlen.c
 
 CC = cc -pthread
 
-CFLAGS= -Wall -Werror -Wextra -g 
+CFLAGS= -Wall -Werror -Wextra 
+
 
 NAME=philo
 
@@ -11,7 +12,7 @@ O_FILES=$(FUNCTS:.c=.o)
 all: $(NAME)
 
 $(NAME):$(O_FILES)
-		$(CC) $(O_FILES) -o philo
+		$(CC) $(O_FILES) -o philo -g -fsanitize=thread
 		rm -rf $(O_FILES)
 
 clean:

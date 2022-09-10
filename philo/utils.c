@@ -2,20 +2,6 @@
 #include "pthread.h"
 #include <sys/time.h> 
 
-
-
-
-//just to keep things clear from the beg:
-//		start = start of stimulation
-//		first = first meal or before last one
-//		last = last meal
-// end will be used to calc diff between two times to print how many seconds had passed
-
-
-/*-------------------this function will calculate diff between current time and 
- * time of when the stimulation had started------------------------*/
-
-
 void	print_error(int i)
 {
 	if (i == 1)
@@ -45,6 +31,7 @@ int	check_args(char **av, int count,int *vals)
 	}
 	if (count == 5)
 		vals[4] = -1;
+	vals[5] = 1;
 	return (1);
 }
 
@@ -60,8 +47,6 @@ int	print_stamp(t_ph *ph, int flag)
 	gettimeofday(&tm, NULL);
 	if (flag == 0) 
 	{
-	/*given 0 as a flg, means stimulation had just started and we need to
-	 * get the time of starting for all threads*/
 		while (i < ph->vals[0])
 		{
 			(ph+i)->start = tm.tv_sec * 1000 + tm.tv_usec / 1000;
@@ -70,97 +55,93 @@ int	print_stamp(t_ph *ph, int flag)
 	}
 	else if (flag == 1)
 	{
-			/*here we will calculate and return the time we need to print*/
 		time = (tm.tv_sec * 1000 + tm.tv_usec / 1000) - ph->start;
-		/*start won't change and we need to always gt the latest time to measure
-		 * how much time had already passed*/
 	}
 	return (time);
 }
 
-int	time_between_meals(t_ph *ph, int flg)
+void	time_between_meals(t_ph *ph)
 {
-		//since this is btwn meals, it should be changed only after eating..
 	struct	timeval tv;
-	int		diff;
 
 	gettimeofday(&tv, NULL);
-	if (flg == 0)
-			ph->first = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	else if (flg == 1)
-	{
-		ph->first = ph->last;
-		ph->last = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	}
-	diff = ph->last - ph->first;
-	return (diff);
+	pthread_mutex_lock(&ph->last_mtx);
+	ph->last = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	pthread_mutex_unlock(&ph->last_mtx);
+	return ((void)1);
 }
 
-int	alive(t_ph *ph, int flag)
+int	alive(t_ph *ph)
 {
-	int	j;
+	int		j;
+	int		i;
+	struct	timeval	tvl;
+	long long	curr;	
 
 	j = 0;
-	if (flag == 0)
-	{/*we'll check one philo*/
-		if (ph->meals == 0 || (ph->last - ph->first >= ph->vals[1]))
-			return (0);
-	}
-	else if (flag == 1)
-	{/*this one will be runned by main in an infinite loop*/
-		while (j < ph->vals[0])
+	i = 0;
+	gettimeofday(&tvl, NULL);
+	while (j < ph->vals[0])
+	{
+		curr = tvl.tv_sec * 1000 + tvl.tv_usec / 1000;
+		if (ph[j].meals != -1 && ph[j].meals >= ph[j].vals[4])
+			i++;
+		if (curr - ph[j].last >= ph->vals[1])
 		{
-			//bc we sent ph from main we can do ph[i]:
-			if (ph[j].meals == 0 || (ph[j].last - ph[j].first >= ph->vals[1]))
-			{
-				printf("chi mossiba hna:last : %lld   first: %lld\n ", ph[j].last, ph[j].first );
-				return (0);
-			}
-			j++;
+			printf("death of %d cus of starvation: ",j );
+			printf("%lld milliseconds of hunger\n", curr - ph[j].last);
+			return (0);
 		}
+		j++;
 	}
-	return (1);
+	if (i == ph->vals[0])
+		return (0);
+	return(1);
 }
 
+void	lock_print(char *str, t_ph *ph, int i)
+{
+	pthread_mutex_lock(ph->prnt);
+	printf("%d   %d %s\n", print_stamp(ph, 1), i, str);
+	pthread_mutex_unlock(ph->prnt);
+}
 
 void eat(int i, t_ph *ph)
 {
-	if (alive(ph, 0))
-	{
-		time_between_meals(ph);
-		pthread_mutex_lock(&ph->fork);
-		printf("%d   %d has taken a fork\n", print_stamp(ph, 1), i);
-		if (i <= ph->vals[0] - 2)
-		{
-			pthread_mutex_lock(&(ph+1)->fork);
-			printf("%d   %d has taken a fork\n", print_stamp(ph, 1), i);
-		}
-		else
-		{
-			pthread_mutex_lock(&(ph- (ph->vals[0] - 1))->fork);
-			printf("%d   %d has taken a fork\n", print_stamp(ph, 1), i);
-		}
-		printf("%d   philosopher %d is eating.._____________\n", print_stamp(ph, 1), i);
-		usleep(ph->vals[2] * 1000);
-		if (ph[i].meals > 0)
-			ph[i].meals -= 1;
-		pthread_mutex_unlock(&ph->fork);
-		if (i <= ph->vals[0] - 2)
-			pthread_mutex_unlock(&(ph+1)->fork);
-		else
-			pthread_mutex_unlock(&(ph - (ph->vals[0] - 1))->fork);
-	}
+	pthread_mutex_lock(&ph->fork);
+	lock_print("has taken a fork", ph, i);
+	if (i <= ph->vals[0] - 2)
+		pthread_mutex_lock(&(ph+1)->fork);
+	else
+		pthread_mutex_lock(&(ph- (ph->vals[0] - 1))->fork);
+	lock_print("has taken a fork", ph, i);
+	lock_print("is eating", ph, i);
+
+	time_between_meals(ph);
+	usleep(ph->vals[2] * 1000);
+	pthread_mutex_lock(&ph->mls_mtx);
+	if (ph->meals >= 0)
+		ph->meals += 1;
+	pthread_mutex_unlock(&ph->mls_mtx);
+	pthread_mutex_unlock(&ph->fork);
+	if (i <= ph->vals[0] - 2)
+		pthread_mutex_unlock(&(ph+1)->fork);
+	else
+		pthread_mutex_unlock(&(ph - (ph->vals[0] - 1))->fork);
 }
 
-void	think_and_sleep(t_ph *ph)
+void	think_and_sleep(t_ph *ph, int i)
 {
-	if (alive(ph, 0))
-		{
-			printf("%d    %d is thinking\n", print_stamp(ph, 1), ph->i);
-			printf("%d    %d is sleeping\n\n", print_stamp(ph, 1), ph->i);
-			usleep(ph->vals[3] * 1000);
-			//get enough sleep
-		}
+	struct	timeval tv;
+	long	strt;
+
+	gettimeofday(&tv, NULL);
+	strt = tv.tv_sec * 1000000 + tv.tv_usec; //kolchi b microsec;
+	lock_print("is sleeping-----------", ph, i);
+	usleep(ph->vals[3] * 900);
+	while (ph->vals[3] * 1000 + strt < tv.tv_sec * 1000000 + tv.tv_usec)
+		usleep(10);
+	lock_print("is thinking", ph, i);
 }
 
 void	*routine(void *arg)
@@ -171,7 +152,7 @@ void	*routine(void *arg)
 	while (1)
 	{
 		eat(ph->i, ph);
-		think_and_sleep(ph);
+		think_and_sleep(ph, ph->i);
 	}
 	return ((void *)1);
 }
@@ -184,7 +165,8 @@ void	philos_init(t_ph *ph)
 	while (i < ph->vals[0])
 	{
 		ph[i].i = i;
-		ph[i].meals = ph->vals[4];
+		ph[i].meals = 0;
+		pthread_mutex_init(&ph[i].last_mtx, NULL);
 		i++;
 	}
 }
@@ -245,33 +227,36 @@ int	main(int ac, char **av)
 {								//makefile wa9ila kay relinki!!
 	// o khdem b calloc!
 	t_ph		*ph;
-	int			vals[5];
+	pthread_mutex_t		*prnt;
+	int			*vals;
 	int			i;
 
 	i = 0;
+	prnt = malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_init(prnt, NULL);
 	if (ac >= 5 && ac <= 6)
 	{
+		vals = malloc(6 * sizeof(int));
 		if (!check_args(av, ac, vals) || vals[0] == 0)
 			return (1);
 		ph = malloc(vals[0] * sizeof(t_ph));
 		while (i < vals[0])
 			ph[i++].vals = vals;
+		i = 0;
+		while (i < vals[0])
+			ph[i++].prnt = prnt;
 		print_stamp(ph, 0);
 		if (!even_threads_creation(ph))
 			return (1);
-		i = 0;
 		while (1)
 		{
-			sleep(1);
-				if (alive(ph, 1) == 0)
-				{
-					//destroy_mutexes();
-					printf("philosopher %d has died :'( \n", i);
-				//	return (0);
-				break;
-				}
+			if (!alive(ph))
+			{
+				//destroy_mutexes();
+				pthread_mutex_lock(ph->prnt);
+				return (0);
+			}
 		}
-		return (0);
 	}
 	print_error(1);
 	return (1);

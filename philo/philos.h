@@ -31,8 +31,17 @@ typedef	struct	s_ph
 	int					*vals;
 	int					meals;
 	pthread_mutex_t		fork;
+	pthread_mutex_t		*prnt;
+	pthread_mutex_t		mls_mtx;
+	pthread_mutex_t		last_mtx;
 	pthread_mutex_t		vals_mtx;
 	pthread_t			th;
 }	t_ph;
 
 #endif
+
+/** * ** * * * * 
+*	norm	
+*	sleep func
+*	
+*/
