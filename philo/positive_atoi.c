@@ -39,3 +39,25 @@ int	positive_atoi(const char *str)
 	}
 	return (res);
 }
+
+int	check_args(char **av, int count, int *vals)
+{
+	int	i;
+
+	i = 0;
+	while (i <= count - 2)
+	{
+		vals[i] = positive_atoi(av[i + 1]);
+		i++;
+	}
+	i = 0;
+	while (i <= count - 2)
+	{
+		if (vals[i] == -1)
+			return (0);
+		i++;
+	}
+	if (count == 5)
+		vals[4] = -1;
+	return (1);
+}

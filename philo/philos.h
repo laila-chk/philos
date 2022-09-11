@@ -4,9 +4,9 @@
 /*   philos.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
-/*         :q                                       +#+#+#+#+#+   +#+           */
+/*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 17:53:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/09/05 17:06:19 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/09/11 14:26:43 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,9 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <pthread.h>
+# include <sys/time.h>
 
-int		positive_atoi(const char *str);
-size_t	ft_strlen(const char *s);
-
-typedef	struct	s_ph
+typedef struct s_ph
 {
 	int					i;
 	long long			start;
@@ -36,12 +34,13 @@ typedef	struct	s_ph
 	pthread_mutex_t		last_mtx;
 	pthread_mutex_t		vals_mtx;
 	pthread_t			th;
-}	t_ph;
+}t_ph;
 
+int			positive_atoi(const char *str);
+size_t		ft_strlen(const char *s);
+int			print_stamp(t_ph *ph, int flag);
+void		time_between_meals(t_ph *ph);
+long long	update_time(void);
+void		my_sleep(int duration);
+int	check_args(char **av, int count, int *vals);
 #endif
-
-/** * ** * * * * 
-*	norm	
-*	sleep func
-*	
-*/

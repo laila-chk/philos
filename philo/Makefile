@@ -1,9 +1,8 @@
-FUNCTS = utils.c positive_atoi.c ft_strlen.c
+FUNCTS = main.c positive_atoi.c ft_strlen.c time_utils.c
 
 CC = cc -pthread
 
 CFLAGS= -Wall -Werror -Wextra 
-
 
 NAME=philo
 
