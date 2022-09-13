@@ -2,7 +2,7 @@ FUNCTS = main.c positive_atoi.c ft_strlen.c time_utils.c
 
 CC = cc -pthread
 
-CFLAGS= -Wall -Werror -Wextra  -g -fsanitize=thread
+CFLAGS= -Wall -Werror -Wextra  -g -fsanitize=address
 
 NAME=philo
 
