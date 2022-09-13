@@ -1,12 +1,12 @@
-FUNCTS = main.c positive_atoi.c ft_strlen.c time_utils.c
+FUNCTS = main.c positive_atoi.c ft_strlen.c time_utils.c threads_utils.c
 
 CC = cc -pthread
 
-CFLAGS= -Wall -Werror -Wextra  -g -fsanitize=address
+CFLAGS = -Wall -Werror -Wextra -g -fsanitize=address
 
-NAME=philo
+NAME = philo
 
-O_FILES=$(FUNCTS:.c=.o)
+O_FILES = $(FUNCTS:.c=.o)
 
 all: $(NAME)
 

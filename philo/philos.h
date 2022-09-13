@@ -43,4 +43,12 @@ void		time_between_meals(t_ph *ph);
 long long	update_time(void);
 void		my_sleep(int duration);
 int			check_args(char **av, int count, int *vals);
+void		eat(int i, t_ph *ph);
+void		*routine(void *arg);
+void		philos_init(t_ph *ph);
+int			odd_threads_creation(t_ph *ph);
+int			even_threads_creation(t_ph *ph);
+void		lock_print(char *str, t_ph *ph, int i);
+int			print_error(int i);
+void		lock_print(char *str, t_ph *ph, int i);
 #endif

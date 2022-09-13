@@ -49,7 +49,7 @@ long long	update_time(void)
 void	time_between_meals(t_ph *ph)
 {
 	pthread_mutex_lock(ph->last_mtx);
-	ph->last = update_time(); //here :last
+	ph->last = update_time();
 	pthread_mutex_unlock(ph->last_mtx);
 	return ((void)1);
 }
