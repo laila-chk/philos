@@ -6,7 +6,7 @@
 /*   By: lchokri <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/05 15:26:32 by lchokri           #+#    #+#             */
-/*   Updated: 2022/09/11 14:41:23 by lchokri          ###   ########.fr       */
+/*   Updated: 2022/09/12 16:12:45 by lchokri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,32 +22,45 @@ void	print_error(int i)
 	}
 }
 
-int	alive(t_ph *ph)
+int	alive(t_ph *ph, int *j)
 {
-	int			j;
 	int			i;
 	long long	curr;	
 
-	j = 0;
 	i = 0;
-	while (j < ph->vals[0])
+	while (*j < ph->vals[0])
 	{
-		curr = update_time();
-		if (ph[j].meals != -1 && ph[j].meals >= ph[j].vals[4])
+		curr = update_time();	
+		pthread_mutex_lock(ph->mls_mtx);
+		if (ph[*j].vals[4] != -1 && ph[*j].meals >= ph[*j].vals[4])
 			i++;
-		if (curr - ph[j].last >= ph->vals[1])
+		pthread_mutex_unlock(ph->mls_mtx);
+		pthread_mutex_lock(ph->last_mtx);
+	//	printf("%p{{{{{{}}}}}}}%d\n", &ph[*j].last, *j);
+		if (curr - ph[*j].last >= ph->vals[1])
+		{
+			pthread_mutex_unlock(ph->last_mtx);
 			return (0);
-		j++;
+		}
+		pthread_mutex_unlock(ph->last_mtx);
+		(*j)++;
 	}
-	if (i == ph->vals[0])
+	(*j)--;
+	pthread_mutex_lock(ph->mls_mtx);
+	if (ph[*j].meals != -1 && i == ph->vals[0])
+	{
+		*j = -1;
+		pthread_mutex_unlock(ph->mls_mtx);
 		return (0);
+	}
+	pthread_mutex_unlock(ph->mls_mtx);
 	return (1);
 }
 
 void	lock_print(char *str, t_ph *ph, int i)
 {
 	pthread_mutex_lock(ph->prnt);
-	printf("%d   %d %s\n", print_stamp(ph, 1), i, str);
+	printf("%d   %d %s\n", print_stamp(ph, 1), i + 1, str);
 	pthread_mutex_unlock(ph->prnt);
 }
 
@@ -63,10 +76,10 @@ void	eat(int i, t_ph *ph)
 	lock_print("is eating", ph, i);
 	time_between_meals(ph);
 	my_sleep(ph->vals[2]);
-	pthread_mutex_lock(&ph->mls_mtx);
+	pthread_mutex_lock(ph->mls_mtx);
 	if (ph->meals >= 0)
 		ph->meals += 1;
-	pthread_mutex_unlock(&ph->mls_mtx);
+	pthread_mutex_unlock(ph->mls_mtx);
 	pthread_mutex_unlock(&ph->fork);
 	if (i <= ph->vals[0] - 2)
 		pthread_mutex_unlock(&(ph + 1)->fork);
@@ -98,7 +111,7 @@ void	philos_init(t_ph *ph)
 	{
 		ph[i].i = i;
 		ph[i].meals = 0;
-		pthread_mutex_init(&ph[i].last_mtx, NULL);
+		////pthread_mutex_init(&ph[i].last_mtx, NULL);
 		i++;
 	}
 }
@@ -110,12 +123,12 @@ int	odd_threads_creation(t_ph *ph)
 	i = 1;
 	while (i < ph->vals[0])
 	{
+		time_between_meals(&ph[i]);
 		if (pthread_create(&ph[i].th, NULL, &routine, &ph[i]))
 		{
 			printf("problem occured while creating the %dth thread\n", i);
 			return (0);
 		}
-		time_between_meals(&ph[i]);
 		i += 2;
 	}
 	i = 0;
@@ -141,12 +154,12 @@ int	even_threads_creation(t_ph *ph)
 	i = 0;
 	while (i < ph->vals[0])
 	{
+		time_between_meals(&ph[i]);
 		if (pthread_create(&ph[i].th, NULL, &routine, &ph[i]))
 		{
 			printf("problem occured while creating the %dth thread\n", i);
 			return (0);
 		}
-		time_between_meals(&ph[i]);
 		i += 2;
 	}
 	usleep(100);
@@ -154,42 +167,70 @@ int	even_threads_creation(t_ph *ph)
 		return (0);
 	return (1);
 }
-//ba9i mochkil flowel
-//makefile wa9ila kay relinki!! o khdem b calloc!
-//check namings of functions and folders
+
+int	first_init(t_ph *ph, pthread_mutex_t *prnt, pthread_mutex_t *mls, pthread_mutex_t *lst)
+{
+	int	i;
+
+	i = 0;
+	if (!prnt || !mls || ph->vals[4] == 0)
+		return (0);
+	pthread_mutex_init(prnt, NULL);
+	pthread_mutex_init(mls, NULL);
+	pthread_mutex_init(lst, NULL);
+	while (i < ph->vals[0])
+	{
+        ph[i].last_mtx = lst;
+		ph[i].prnt = prnt;
+		ph[i].mls_mtx = mls;
+		i++;
+	}
+	print_stamp(ph, 0);
+	return (1);
+}
+
+int	stimulation_ended(t_ph *ph)
+{
+	int	j;
+
+	while (1)
+	{
+		j = 0;
+		if (!alive(ph, &j))
+		{
+			pthread_mutex_lock(ph->prnt);
+			if (j != -1)
+				printf("%d   %d died\n", print_stamp(ph, 1), j + 1);
+			return (1);
+		}
+	}
+}
+
 int	main(int ac, char **av)
 {	
 	t_ph			*ph;
 	pthread_mutex_t	*prnt;
+	pthread_mutex_t	*lst;
+	pthread_mutex_t	*mls_mtx;
 	int				*vals;
-	int				i;
 
-	i = 0;
 	prnt = malloc(sizeof(pthread_mutex_t));
-	pthread_mutex_init(prnt, NULL);
+	lst = malloc(sizeof(pthread_mutex_t));
+	mls_mtx = malloc(sizeof(pthread_mutex_t));
 	if (ac >= 5 && ac <= 6)
 	{
-		vals = malloc(5 * sizeof(int));
-		if (!check_args(av, ac, vals) || vals[0] == 0)
+		vals = malloc(6 * sizeof(int));
+		if (!vals || !check_args(av, ac, vals) || vals[0] == 0)
 			return (1);
 		ph = malloc(vals[0] * sizeof(t_ph));
-		while (i < vals[0])
-			ph[i++].vals = vals;
-		i = 0;
-		while (i < vals[0])
-			ph[i++].prnt = prnt;
-		print_stamp(ph, 0);
-		if (!even_threads_creation(ph))
+		if (!ph)
 			return (1);
-		while (1)
-		{
-			if (!alive(ph))
-			{
-				//destroy_mutexes();
-				pthread_mutex_lock(ph->prnt);
-				return (0);
-			}
-		}
+		while (vals[5] < vals[0])
+			ph[vals[5]++].vals = vals;
+		if (!first_init(ph, prnt, mls_mtx, lst) || !even_threads_creation(ph))
+			return (1);
+		if (stimulation_ended(ph))
+			return (0);
 	}
 	print_error(1);
 	return (1);

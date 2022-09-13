@@ -47,6 +47,11 @@ int	check_args(char **av, int count, int *vals)
 	i = 0;
 	while (i <= count - 2)
 	{
+		if (av[i + 1][0] == '\0')
+		{
+			write(2, "Error: empty argument\n", 22);
+			return (0);
+		}
 		vals[i] = positive_atoi(av[i + 1]);
 		i++;
 	}
@@ -59,5 +64,6 @@ int	check_args(char **av, int count, int *vals)
 	}
 	if (count == 5)
 		vals[4] = -1;
+	vals[5] = 0;
 	return (1);
 }

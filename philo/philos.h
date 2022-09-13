@@ -30,11 +30,11 @@ typedef struct s_ph
 	int					meals;
 	pthread_mutex_t		fork;
 	pthread_mutex_t		*prnt;
-	pthread_mutex_t		mls_mtx;
-	pthread_mutex_t		last_mtx;
+	pthread_mutex_t		*mls_mtx;
+	pthread_mutex_t		*last_mtx;
 	pthread_mutex_t		vals_mtx;
 	pthread_t			th;
-}t_ph;
+}	t_ph;
 
 int			positive_atoi(const char *str);
 size_t		ft_strlen(const char *s);
@@ -42,5 +42,5 @@ int			print_stamp(t_ph *ph, int flag);
 void		time_between_meals(t_ph *ph);
 long long	update_time(void);
 void		my_sleep(int duration);
-int	check_args(char **av, int count, int *vals);
+int			check_args(char **av, int count, int *vals);
 #endif

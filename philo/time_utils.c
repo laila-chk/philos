@@ -36,17 +36,6 @@ int	print_stamp(t_ph *ph, int flag)
 	return (time);
 }
 
-void	time_between_meals(t_ph *ph)
-{
-	struct timeval	tv;
-
-	gettimeofday(&tv, NULL);
-	pthread_mutex_lock(&ph->last_mtx);
-	ph->last = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	pthread_mutex_unlock(&ph->last_mtx);
-	return ((void)1);
-}
-
 long long	update_time(void)
 {
 	struct timeval	tv;
@@ -55,6 +44,14 @@ long long	update_time(void)
 	gettimeofday(&tv, NULL);
 	time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	return (time);
+}
+
+void	time_between_meals(t_ph *ph)
+{
+	pthread_mutex_lock(ph->last_mtx);
+	ph->last = update_time(); //here :last
+	pthread_mutex_unlock(ph->last_mtx);
+	return ((void)1);
 }
 
 void	my_sleep(int duration)
