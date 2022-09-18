@@ -48,30 +48,6 @@ we have no real humans or philos to use in our program, but we have processes th
     
     a data race is something we should avoid since it could ruin our code, it occurs when two threads access the same var at the same time, they read the same val, one thread write to it and change it while the second hangs on there for a while, once the second wants to keep going, it writes the val it had earlier, and jumps where the first thread stopped..
     
-    - example:
-        
-        ```c
-        /*.   code    .*/
-        void *routine(*arg)
-        {
-        		int i;
-        		
-        		i = (int)arg;
-        		i++;
-        }
-        int main()
-        {
-        	int i = 0;
-        	
-        	pthread_t th1;
-        	pthread_t th2;
-        	pthread_create(&th1, NULL, &routine, &i);
-        	pthread_create(&th2, NULL, &routine, &i);
-        }
-        //------expect :
-        
-        //-----what happens:
-        ```
         
 - **race condition**
     
