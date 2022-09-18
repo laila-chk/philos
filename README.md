@@ -1,4 +1,4 @@
--I never thought philosophy would be so deadly.
+for a prettier Readme, please visit [my notion page.](https://power-dianella-94f.notion.site/philosophers-c00ba1e6a8c64e439a987665a68f5c52)		
 
 *Philosophers is a C project where we should have a certain number of philosophers, each one of them have one fork, they share one huge plate of spaghetti, each one of them is either eating, thinking or sleeping, the problem is: a philosopher to be able to eat needs TWO forks, which means he takes the fork of the philo next to him. so two philos that are setting next to each other won’t be able to eat at the same time, this is a very known sharing resources problem that’s represented by philos and forks, but should be handled in our C program.*
 
